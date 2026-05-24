@@ -1,7 +1,7 @@
 <?php
 require 'koneksi.php';
 
-// Cek menggunakan COOKIE
+// Cek apakah sudah login, jika ya, langsung ke dashboard
 if (isset($_COOKIE['user_id'])) {
     header("Location: dashboard.php");
     exit;
@@ -10,7 +10,7 @@ if (isset($_COOKIE['user_id'])) {
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = $_POST['email'];
+    $email = $_POST['email'];
     $password = $_POST['password'];
 
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
@@ -22,22 +22,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $result->fetch_assoc();
 
         if (password_verify($password, $user['password'])) {
-            // ======================================================
-            // FIX VERCEL: Pakai setcookie() dengan opsi array
-            // SameSite=None + Secure=true wajib untuk HTTPS (Vercel)
-            // ======================================================
+            // KONFIGURASI COOKIE YANG LEBIH AMAN DAN RELIABLE
             $cookie_options = [
-                'expires'  => time() + 86400,
+                'expires'  => time() + 86400, // 1 hari
                 'path'     => '/',
-                'secure'   => true,   // wajib untuk HTTPS/Vercel
-                'httponly' => false,   // false agar bisa dibaca JS jika perlu
-                'samesite' => 'None', // None agar cookie dikirim di redirect lintas request
+                'domain'   => '', // Biarkan kosong agar berlaku di domain saat ini
+                'secure'   => true,   // WAJIB true jika pakai HTTPS (Vercel wajib ini)
+                'httponly' => true,   // Lebih aman dari XSS
+                'samesite' => 'Lax'   // Coba 'Lax' dulu, kalau gagal baru 'None'
             ];
-            setcookie('user_id',  (string)$user['id'],       $cookie_options);
-            setcookie('username', (string)$user['username'],  $cookie_options);
 
-            header("Location: dashboard.php");
-            exit;
+            setcookie('user_id', (string)$user['id'], $cookie_options);
+            setcookie('username', (string)$user['username'], $cookie_options);
+
+            // Verifikasi apakah cookie sudah tersimpan di sisi server sebelum redirect
+            if (isset($_COOKIE['user_id'])) {
+                header("Location: dashboard.php");
+                exit;
+            } else {
+                // Force redirect jika cookie butuh waktu untuk terbaca
+                header("Location: dashboard.php");
+                exit;
+            }
         } else {
             $error = "Password salah!";
         }

@@ -1,12 +1,21 @@
 <?php
+// PASTIKAN BARIS INI PALING ATAS
 require 'koneksi.php';
+
+// Cek apakah cookie ada
 if (!isset($_COOKIE['user_id'])) {
-    die("Gagal! Cookie user_id nggak kedeteksi.");
-} else {
-    echo "Berhasil! Cookie user_id terdeteksi: " . $_COOKIE['user_id'];
+    // Kalau nggak ada, tendang balik ke login
+    header("Location: login.php");
     exit;
 }
-$user_id = $_COOKIE['user_id'];     
+
+// Kalau ada, simpan ke variabel
+$user_id = $_COOKIE['user_id'];
+
+// --- Sisa codingan dashboard lo mulai di sini ---
+// Contoh: 
+// $query = "SELECT * FROM transactions WHERE user_id = '$user_id'";
+// ... dan seterusnya ...
 
 $edit_mode = false;
 $edit_id = '';
