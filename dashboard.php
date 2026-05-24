@@ -1,12 +1,12 @@
 <?php
 require 'koneksi.php';
-
-// Cek login via COOKIE
 if (!isset($_COOKIE['user_id'])) {
-    header("Location: login.php");
+    die("Gagal! Cookie user_id nggak kedeteksi.");
+} else {
+    echo "Berhasil! Cookie user_id terdeteksi: " . $_COOKIE['user_id'];
     exit;
 }
-$user_id = $_COOKIE['user_id'];
+$user_id = $_COOKIE['user_id'];     
 
 $edit_mode = false;
 $edit_id = '';
